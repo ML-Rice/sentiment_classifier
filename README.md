@@ -34,8 +34,8 @@ the empty project structure is preserved in Git.
 
 ## Recommended datasets
 
-- IMDb Large Movie Review Dataset
-- Amazon product reviews
+- [IMDb Large Movie Review Dataset](https://www.kaggle.com/datasets/lakshmi25npathi/imdb-dataset-of-50k-movie-reviews/data)
+- [Amazon product reviews](https://www.kaggle.com/datasets/arhamrumi/amazon-product-reviews)
 
 Place downloaded source files in `data/raw/`. Keep raw data unchanged and
 write cleaned or split data to `data/processed/`.
