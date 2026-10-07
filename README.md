@@ -1,5 +1,5 @@
 # Sentiment Classifier
-
+# FDOfja;dofkja
 Classify movie or product reviews as positive or negative using traditional
 natural language processing techniques. The project compares a rule-based
 sentiment baseline with scikit-learn pipelines:
