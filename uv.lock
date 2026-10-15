@@ -960,6 +960,7 @@ name = "sentiment-classifier"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
+    { name = "joblib" },
     { name = "matplotlib" },
     { name = "nltk" },
     { name = "pandas" },
@@ -972,6 +973,7 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
+    { name = "joblib", specifier = ">=1.6.0" },
     { name = "matplotlib", specifier = ">=3.11.2" },
     { name = "nltk", specifier = ">=3.10.3" },
     { name = "pandas", specifier = ">=3.0.6" },
