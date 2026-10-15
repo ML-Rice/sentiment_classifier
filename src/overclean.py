@@ -1,32 +1,64 @@
-"""Use the removed_mixed_words function in word_tilt.py to create a trimmed version of each review in a copy of dataset"""
-import pandas as pd
-import os
+"""Remove words with neutral word tilts from the cleaned dataset."""
+
+import re
+from pathlib import Path
 import sys
 
-# Pathfinding to import the word_tilt.py file so that we can apply it to the csv file
-project_root = os.path.abspath(
-    os.path.join(os.path.dirname(__file__), "..", "..")
-)
-sys.path.append(project_root)
+import pandas as pd
+import yaml
 
-import investigation.word_tilt as word_tilt
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+sys.path.append(str(PROJECT_ROOT))
 
-output_dataset_path = "trimmed_IMDB_Dataset.csv"
+from investigation import word_tilt
 
-current_dir = os.path.dirname(__file__)
 
-csv_path = os.path.abspath(
-    os.path.join(current_dir, "..", "raw", "IMDB_Dataset.csv")
-)
+def overclean_reviews(
+    dataframe: pd.DataFrame, words_to_remove: set[str]
+) -> pd.DataFrame:
+    """Remove supplied words from every review using vectorized string operations."""
+    overcleaned = dataframe.copy()
+    escaped_words = sorted(
+        (re.escape(word) for word in words_to_remove), key=len, reverse=True
+    )
+    if not escaped_words:
+        return overcleaned
 
-original_reviews = pd.read_csv(csv_path)
-# Only looks at the first 5 reviews, remove head to make it look at all the reviews (takes time)
-trimmed_reviews = original_reviews.head(5).copy()
+    words_pattern = rf"\b(?:{'|'.join(escaped_words)})\b"
+    overcleaned["review"] = (
+        overcleaned["review"]
+        .fillna("")
+        .astype(str)
+        .str.replace(words_pattern, "", regex=True)
+        .str.replace(r"\s+", " ", regex=True)
+        .str.strip()
+    )
+    return overcleaned
 
-trimmed_reviews["review"] = trimmed_reviews["review"].apply(word_tilt.remove_mixed_words)
 
-trimmed_reviews.to_csv(output_dataset_path, index=False)
-# print("File was saved successfully to processed folder")
+def main() -> None:
+    config_path = Path(__file__).resolve().with_name("config.yaml")
+    with config_path.open(encoding="utf-8") as config_file:
+        config = yaml.safe_load(config_file)
 
-# Test to see csv copy
-# print(trimmed_reviews.head(5).to_string())
+    dataset_path = Path(config["dataset_path"])
+    if not dataset_path.is_absolute():
+        dataset_path = PROJECT_ROOT / dataset_path
+
+    processed_path = PROJECT_ROOT / "data" / "processed" / dataset_path.name
+    output_path = processed_path.with_name(
+        f"{processed_path.stem}_overcleaned{processed_path.suffix}"
+    )
+
+    reviews = word_tilt.load_reviews(dataset_path)
+    word_tilts = word_tilt.calculate_word_tilts(reviews)
+    words_to_remove = word_tilt.words_with_tilt_near_one(word_tilts)
+
+    cleaned_dataset = pd.read_csv(processed_path)
+    overcleaned_dataset = overclean_reviews(cleaned_dataset, words_to_remove)
+    overcleaned_dataset.to_csv(output_path, index=False)
+    print(f"Saved overcleaned dataset to {output_path}")
+
+
+if __name__ == "__main__":
+    main()

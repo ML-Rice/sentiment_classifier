@@ -23,7 +23,6 @@ src/
 ├── preprocess.py        # Lowercase, clean, and handle negation-aware stop words
 ├── baseline.py          # Run VADER/TextBlob baseline predictions
 ├── train.py             # Train the chosen model
-├── evaluate.py          # Calculate metrics and compare pipelines
 └── predict.py           # Classify new review text
 models/                  # Saved trained pipelines
 reports/                 # Metrics, plots, and error analysis
