@@ -1,1 +1,2 @@
 chosen_model: baseline
+dataset_path: data\raw\IMDB_Dataset.csv

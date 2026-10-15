@@ -4,7 +4,10 @@ cleans review text before we give it to a model.
 
 import html
 import re
+from pathlib import Path
 
+import pandas as pd
+import yaml
 from nltk.corpus import stopwords
 
 
@@ -119,3 +122,29 @@ def clean_text(text):
     text = remove_stop_words(text, STOP_WORDS)
     return text
 
+
+def preprocess_reviews(dataframe):
+    """Apply the shared text cleaning implementation to every review."""
+    return dataframe["review"].map(clean_text)
+
+
+def main():
+    config_path = Path(__file__).resolve().with_name("config.yaml")
+    with config_path.open(encoding="utf-8") as config_file:
+        config = yaml.safe_load(config_file)
+
+    dataset_path = Path(config["dataset_path"])
+    if not dataset_path.is_absolute():
+        dataset_path = config_path.parent.parent / dataset_path
+
+    dataframe = pd.read_csv(dataset_path)
+    dataframe["review"] = preprocess_reviews(dataframe)
+
+    output_path = config_path.parent.parent / "data" / "processed" / dataset_path.name
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    dataframe.to_csv(output_path, index=False)
+    print(f"Saved processed dataset to {output_path}")
+
+
+if __name__ == "__main__":
+    main()

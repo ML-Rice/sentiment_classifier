@@ -3,7 +3,7 @@ from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 
 N = 50000
 analyzer = SentimentIntensityAnalyzer()
-df = pd.read_csv('data/raw/IMDB Dataset.csv')
+df = pd.read_csv('data/processed/IMDB_Dataset.csv')
 df['binary_sentiment'] = (df['sentiment'] == 'positive').astype(int)
 
 def predict(text):
