@@ -18,7 +18,7 @@ trimmed_reviews = pd.read_csv(CSV_PATH)
 
 def naive_bayes(trimmed_reviews = trimmed_reviews):
     """Create the Multimonial Naive Bayes Pipeline using trimmed_IMDB_Dataset and prints f1 scores and accuracy"""
-    
+
     # Initialize feature (X), or the input(s) of the model; labels (y), or the output(s) of the model
     X = trimmed_reviews["review"]
     y = trimmed_reviews["sentiment"]
@@ -54,3 +54,4 @@ def naive_bayes(trimmed_reviews = trimmed_reviews):
 
 if __name__ == "__main__":
     naive_bayes(trimmed_reviews)
+    
