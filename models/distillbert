@@ -1,0 +1,56 @@
+import torch
+import numpy as np
+import torch
+
+class ReviewDataset(torch.utils.data.Dataset):
+
+    def __init__(self, encodings, labels):
+        self.encodings = encodings
+        self.labels = labels
+
+    def __len__(self):
+        return len(self.labels)
+
+    def __getitem__(self, i):
+        item = {key: values[i] for key, values in self.encodings.items()}
+        item["labels"] = int(self.labels[i])
+        return item
+
+def train_epoch(model, loader, optimizer, scheduler, scaler, device):
+    model.train()
+    total_loss = 0.0
+
+    for step, batch in enumerate(loader, start=1):
+        batch = {key: value.to(device) for key, value in batch.items()}
+
+        with torch.autocast(device_type="cuda", dtype=torch.float16):
+            outputs = model(**batch)            # 1. forward pass
+            loss = outputs.loss                 # 2. loss (the model calculates it)
+
+        optimizer.zero_grad()                   # 3. clear old gradients
+        scaler.scale(loss).backward()           # 4. gradients, scaled up for 16-bit math
+        scaler.step(optimizer)                  # 5. scale back down, then nudge the weights
+        scaler.update()                         #    adjust the scaling factor for next time
+        scheduler.step()                        #    move the learning rate along its schedule
+
+        total_loss += loss.item()
+        if step % 200 == 0:
+            print(f"  batch {step}/{len(loader)}  average loss so far {total_loss / step:.4f}")
+
+        return total_loss / len(loader)
+
+
+def evaluate(model, loader, device):
+    model.eval()
+    total_loss = 0.0
+    all_predictions = []
+
+    with torch.no_grad():
+        for batch in loader:
+            batch = {key: value.to(device) for key, value in batch.items()}
+            with torch.autocast(device_type="cuda", dtype=torch.float16):
+                outputs = model(**batch)
+            total_loss += outputs.loss.item() * len(batch["labels"])
+            all_predictions.append(outputs.logits.argmax(dim=1).cpu().numpy())
+
+    return total_loss / len(loader.dataset), np.concatenate(all_predictions)
