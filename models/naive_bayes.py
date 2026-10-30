@@ -2,6 +2,7 @@
 
 from pathlib import Path
 import pandas as pd
+import numpy as np
 from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.naive_bayes import MultinomialNB
@@ -45,8 +46,41 @@ def naive_bayes(trimmed_reviews = trimmed_reviews):
         'Predicted Label': y_prediction
     })
 
+    # Checking word associations using P(class | word) for every word in the vocabulary list of training data
+
+    vectorizer = model_pipeline.named_steps["vectorizer"]
+    model = model_pipeline.named_steps["model"]
+    vocab_list = vectorizer.get_feature_names_out()
+    print("Vocab_list:", vocab_list)
+    prob_word_given_class = np.exp(model.feature_log_prob_)
+    class_priors = np.exp(model.class_log_prior_)
+    p_neg = class_priors[0]
+    p_pos = class_priors[1]
+
+    p_word_given_neg = prob_word_given_class[0]
+    p_word_given_pos = prob_word_given_class[1]
+
+    # Use law of total probabilty to calculate P(word) for Bayes formula
+    p_word = (p_word_given_pos * p_pos) + (p_word_given_neg * p_neg)
+
+    # Calculate P(Positive | word) and P(Negative | word)
+    p_neg_given_word = (p_word_given_neg * p_neg) / p_word
+    p_pos_given_word = (p_word_given_pos * p_pos) / p_word
+    sorted_p_neg_given_word = np.argsort(-p_neg_given_word)
+    sorted_p_pos_given_word = np.argsort(-p_pos_given_word)
+    
+    print(p_neg_given_word, p_pos_given_word)
+
+    for neg_idx in sorted_p_neg_given_word[0:20]:
+        print("Top negative words:", vocab_list[neg_idx], f"P(Negative | {vocab_list[neg_idx]}) = {p_neg_given_word[neg_idx]}")
+    print("\n")
+    for pos_idx in sorted_p_pos_given_word[0:20]:
+        print("Top positive words:", vocab_list[pos_idx], f"P(Positive | {vocab_list[pos_idx]}) = {p_pos_given_word[pos_idx]}")
+
+    print("Classes at index positions in array:", model.classes_)
+
     # Quick Check: Display the first 10 rows
-    print("Sample")
+    print("\nSample")
     print(results_df.head(20))
 
     print(classification_report(y_test, y_prediction))
