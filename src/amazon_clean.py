@@ -3,11 +3,20 @@ from pathlib import Path
 import pandas as pd
 
 from clean import clean_text
+import re
+import html
 
 ROOT = Path(__file__).resolve().parent.parent
 RAW_PATH = ROOT / "data" / "raw" / "Reviews.csv"
 OUT_PATH = ROOT / "data" / "processed" / "Amazon_Reviews_clean.csv"
 
+def strip_html(text: str) -> str:
+    if not isinstance(text, str):
+        return ""
+    # Remove HTML tags using Regex
+    clean = re.sub(r"<[^>]+>", " ", text)
+    # Unescape HTML entities and strip leading/trailing whitespace
+    return html.unescape(clean).strip()
 
 def main():
     df = pd.read_csv(RAW_PATH)
@@ -43,6 +52,9 @@ def main():
     df["helpful_ratio_mean"] = df["helpful_ratio"].fillna(df["helpful_ratio"].mean())
 
     print("\nCleaning text (this takes a few minutes)...")
+    # Removing HTML stuff from text and cleaning
+    df["Text"] = df["Text"].map(strip_html)
+    df["Summary"] = df["Summary"].map(strip_html)
     df["text_clean"] = df["Text"].map(clean_text)
     df["summary_clean"] = df["Summary"].map(clean_text)
     before = len(df)
