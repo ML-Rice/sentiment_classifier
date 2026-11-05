@@ -16,5 +16,6 @@ dependencies = [
     "shap>=0.54.1",
     "textblob>=0.20.1",
     "torch>=2.15.0",
+    "transformers>=5.22.1",
     "vadersentiment>=3.3.2",
 ]
