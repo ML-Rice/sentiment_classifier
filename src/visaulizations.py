@@ -106,8 +106,31 @@ def plot_helpfulness_analysis(csv_path: Path):
         plt.ylabel("Number of Reviews")
         plt.grid(axis="y", linestyle="--", alpha=0.5)
         plt.tight_layout()
-    # Open windows all at once
 
+    # =============================================================
+    # WINDOW 8: Box plot showing the correlation between time (seconds since start) vs. score
+    # =============================================================
+    time_df = df[["Time", "Score"]].copy()
+    time_df["Time"] = pd.to_datetime(time_df["Time"])
+    time_df["Seconds"] = time_df["Time"].astype('int64') // 10**9 # Converts date to seconds
+
+    time_df.boxplot(
+        column="Seconds",
+        by="Score",
+        vert=False,
+        patch_artist=True,
+        showfliers=False
+    )
+    plt.suptitle(
+        "Distribution of Seconds Since Initial Value (Recency of Review) grouped by Score",
+        fontsize=12,
+        fontweight="bold",
+    )
+    
+    plt.xlabel("Seconds")
+    plt.ylabel("Review Score (1-5) Stars")
+
+    # Open windows all at once
     plt.show()
 
 
