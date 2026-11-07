@@ -13,10 +13,15 @@ OUT_PATH = ROOT / "data" / "processed" / "Amazon_Reviews_clean.csv"
 def strip_html(text: str) -> str:
     if not isinstance(text, str):
         return ""
-    # Remove HTML tags using Regex
-    clean = re.sub(r"<[^>]+>", " ", text)
-    # Unescape HTML entities and strip leading/trailing whitespace
-    return html.unescape(clean).strip()
+    
+    # 1. Unescape HTML entities FIRST (&lt;br /&gt; -> <br />)
+    text = html.unescape(text)
+    
+    # 2. Remove HTML tags (including multiline tags with re.DOTALL)
+    clean = re.sub(r"<[^>]+>", " ", text, flags=re.DOTALL)
+    
+    # 3. Collapse extra whitespace and strip edges
+    return re.sub(r"\s+", " ", clean).strip()
 
 def main():
     df = pd.read_csv(RAW_PATH)
