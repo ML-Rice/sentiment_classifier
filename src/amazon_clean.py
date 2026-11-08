@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import pandas as pd
+import numpy as np
 
 from clean import clean_text
 import re
@@ -8,8 +9,8 @@ import html
 
 ROOT = Path(__file__).resolve().parent.parent
 RAW_PATH = ROOT / "data" / "raw" / "Reviews.csv"
-OUT_PATH = ROOT / "data" / "processed" / "Amazon_Reviews_clean.csv"
-
+OUT_PATH = ROOT / "data" / "processed" / "Reviews.csv"
+OUT_PATH_OVERCLEANED = ROOT / "data" / "processed" / "Reviews_overcleaned.csv"
 def strip_html(text: str) -> str:
     if not isinstance(text, str):
         return ""
@@ -25,6 +26,10 @@ def strip_html(text: str) -> str:
 
 def main():
     df = pd.read_csv(RAW_PATH)
+
+    # Creates new column that is sentiment (positive if Score >= 3 and negative if Score <= 2)
+    df["sentiment"] = np.where(df["Score"] >= 3, "positive", "negative")
+
     print("Columns:", df.columns.tolist())
     print("Starting rows:", len(df))
 
@@ -68,8 +73,11 @@ def main():
 
     print("Final rows:", len(df))
     OUT_PATH.parent.mkdir(parents=True, exist_ok=True)
+    OUT_PATH_OVERCLEANED.parent.mkdir(parents=True, exist_ok=True)
     df.to_csv(OUT_PATH, index=False)
+    df.to_csv(OUT_PATH_OVERCLEANED, index=False)
     print(f"Saved to {OUT_PATH}")
+    print(f"Saved copy to {OUT_PATH_OVERCLEANED}")
 
 
 if __name__ == "__main__":
