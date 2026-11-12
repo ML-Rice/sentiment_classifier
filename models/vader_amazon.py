@@ -1,3 +1,16 @@
+"""
+results from running it:
+                  reviews: 363850
+           positive share: 0.843
+ always-positive accuracy: 0.843
+                 accuracy: 0.876
+                precision: 0.898
+                   recall: 0.962
+            F1 (positive): 0.929
+            F1 (negative): 0.508
+                 macro F1: 0.718
+"""
+
 import pandas as pd
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
@@ -34,7 +47,7 @@ def evaluate_vader(df, text_column, label_column, threshold=0.0):
 
 def main():
     df = load_amazon()
-    print(f"Running VADER on {len(df)} reviews (this takes a few minutes)...")
+    print(f"VADER is being run on {len(df)} reviews :)")
     results = evaluate_vader(df, "Text", "label")
     for name, value in results.items():
         print(f"{name:>25}: {value:.3f}" if isinstance(value, float) else f"{name:>25}: {value}")
