@@ -16,13 +16,13 @@ from transformers import (
  
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 MODEL_NAME = "distilbert-base-uncased"
-MAX_LENGTH = 512          # tokens; about 12% of reviews are longer and get cut off
-VALIDATION_SIZE = 0.2     # share of the training set held out for validation
+MAX_LENGTH = 512          # IMPORTANT: even with 512 tokens, like about 13% of reviews are truncated
+VALIDATION_SIZE = 0.2 
 TRAIN_BATCH_SIZE = 16
 EVAL_BATCH_SIZE = 64
 LEARNING_RATE = 2e-5
 NUM_EPOCHS = 2
-WARMUP_FRACTION = 0.1     # share of training steps spent warming up the learning rate
+WARMUP_FRACTION = 0.1
  
  
 class ReviewDataset(torch.utils.data.Dataset):
