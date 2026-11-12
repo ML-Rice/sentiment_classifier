@@ -1,14 +1,14 @@
 """
 results from running it:
-                  reviews: 363850
-           positive share: 0.843
- always-positive accuracy: 0.843
-                 accuracy: 0.876
-                precision: 0.898
-                   recall: 0.962
-            F1 (positive): 0.929
-            F1 (negative): 0.508
-                 macro F1: 0.718
+                  reviews: 393606
+           positive share: 0.855
+ always-positive accuracy: 0.855
+                 accuracy: 0.872
+                precision: 0.905
+                   recall: 0.950
+            F1 (positive): 0.927
+            F1 (negative): 0.481
+                 macro F1: 0.704
 """
 
 import pandas as pd
@@ -20,9 +20,8 @@ DATA_PATH = "data/raw/Amazon_Reviews.csv"
 
 def load_amazon(path=DATA_PATH):
     df = pd.read_csv(path)
-    df = df.drop_duplicates(subset=["UserId", "Text"]) #Same people were making the smae reviews so clean duplicates
-    df = df[df["Score"] != 3].copy()
-    df["label"] = (df["Score"] >= 4).astype(int)
+    df = df.drop_duplicates(subset=["UserId", "Text"]).copy()
+    df["label"] = (df["Score"] >= 3).astype(int)
     return df
 
 
