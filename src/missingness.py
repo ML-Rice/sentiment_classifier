@@ -5,6 +5,8 @@ import pandas as pd
 from sklearn.impute import KNNImputer
 from sklearn.preprocessing import MinMaxScaler
 
+from dedupe import remove_duplicates
+
 ROOT = Path(__file__).resolve().parent.parent
 RAW_PATH = ROOT / "data" / "raw" / "Reviews.csv"
 REPORTS_DIR = ROOT / "reports"
@@ -16,7 +18,7 @@ SEED = 42
 
 def check_missingness(df):
     print("=" * 60)
-    print("MISSING VALUES PER COLUMN")
+    print("STEP 1: MISSING VALUES PER COLUMN")
     print("=" * 60)
     report = pd.DataFrame({
         "missing_count": df.isna().sum(),
@@ -26,6 +28,7 @@ def check_missingness(df):
     flagged = report[report["missing_pct"] > 30]
     print("\nColumns over 30% missing (lead's rule):",
           list(flagged.index) if len(flagged) else "none")
+
     print("\nBlank (empty or whitespace-only) text:")
     for col in ["Summary", "Text"]:
         blank = df[col].fillna("").str.strip().eq("").sum()
@@ -47,7 +50,7 @@ def build_helpful_ratio(df):
     impossible = num > den
     valid = (den > 0) & (num <= den)
 
-    print(f"Rows with 0 votes (ratio undef): {no_votes.sum()} "
+    print(f"Rows with 0 votes (ratio undefined): {no_votes.sum()} "
           f"({no_votes.mean() * 100:.1f}%)")
     print(f"Rows with numerator > denominator (impossible): {impossible.sum()}")
 
@@ -57,8 +60,9 @@ def build_helpful_ratio(df):
     pct = df["helpful_ratio"].isna().mean() * 100
     print(f"helpful_ratio missing after build: {pct:.1f}%")
     if pct > 30:
-        print(" Over the 30% rule, but there is an obvious reason: "
+        print("-> Over the 30% rule, but there is an obvious reason: "
               "nobody voted, so the ratio does not exist.")
+
     print("\nDoes 'no votes' relate to score? (mean Score by group)")
     print(df.groupby("has_votes")["Score"].agg(["mean", "count"]).round(3))
     return df
@@ -105,6 +109,9 @@ def main():
     df = pd.read_csv(RAW_PATH)
     print("Columns:", df.columns.tolist())
     print("Rows:", len(df), "\n")
+
+    df = remove_duplicates(df)
+    print()
 
     check_missingness(df)
     df = build_helpful_ratio(df)
