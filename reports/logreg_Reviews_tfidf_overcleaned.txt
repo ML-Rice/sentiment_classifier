@@ -1,0 +1,10 @@
+Best alpha: 0.1
+
+              precision    recall  f1-score   support
+
+    negative       0.77      0.62      0.69     11381
+    positive       0.94      0.97      0.95     67260
+
+    accuracy                           0.92     78641
+   macro avg       0.85      0.80      0.82     78641
+weighted avg       0.91      0.92      0.91     78641
