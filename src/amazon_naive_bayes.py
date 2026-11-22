@@ -5,6 +5,7 @@ from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.pipeline import Pipeline
 from sklearn.metrics import classification_report, accuracy_score
+from upsample import upsample
 
 # pathfinding to the csv file
 SCRIPT_DIR = Path(__file__).resolve().parent
@@ -16,16 +17,21 @@ trimmed_reviews = pd.read_csv(CSV_PATH)
 
 def naive_bayes(trimmed_reviews = trimmed_reviews):
     # Initialize feature (X), or the input(s) of the model; labels (y), or the output(s) of the model
-    X = trimmed_reviews["Text"]
-    y = trimmed_reviews["sentiment"]
+    # X = trimmed_reviews["Text"]
+    # y = trimmed_reviews["sentiment"]
 
-    X_train, X_test, y_train, y_test = train_test_split(
-        X,
-        y,
+    train_df, test_df = train_test_split(
+        trimmed_reviews,
         test_size = 0.2,
         random_state = 42,
-        stratify = y
+        stratify = trimmed_reviews["sentiment"]
     )
+
+    X_train = train_df["Text"]
+    y_train = train_df["sentiment"]
+
+    X_test = test_df["Text"]
+    y_test = test_df["sentiment"]
 
     model_pipeline = Pipeline([
         ('vectorizer', CountVectorizer()),
