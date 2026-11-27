@@ -1,8 +1,73 @@
+import html
+import re
 from pathlib import Path
 
+import nltk
 import pandas as pd
+from nltk.corpus import stopwords
 
-from clean import clean_text
+from dedupe import remove_duplicates
+
+WORDS_TO_KEEP = [
+    "no", "nor", "not", "never", "none", "nobody", "nothing", "nowhere",
+    "neither", "cannot", "without",
+    "but", "however", "although", "though", "yet", "except", "despite",
+    "against",
+    "aren", "couldn", "didn", "doesn", "hadn", "hasn", "haven", "isn",
+    "mightn", "mustn", "needn", "shan", "shouldn", "wasn", "weren", "won",
+    "wouldn", "don", "ain",
+]
+
+SPECIAL_CONTRACTIONS = {
+    "can't": "can not",
+    "won't": "will not",
+    "shan't": "shall not",
+    "ain't": "is not",
+    "let's": "let us",
+    "i'm": "i am",
+}
+
+CONTRACTION_ENDINGS = [
+    ("n't", " not"),
+    ("'re", " are"),
+    ("'ve", " have"),
+    ("'ll", " will"),
+    ("'d", " would"),
+    ("'m", " am"),
+    ("'s", " is"),
+]
+
+
+def get_stop_words():
+    try:
+        words = stopwords.words("english")
+    except LookupError:
+        nltk.download("stopwords", quiet=True)
+        words = stopwords.words("english")
+    return {w for w in words if w not in WORDS_TO_KEEP}
+
+
+STOP_WORDS = get_stop_words()
+
+
+def clean_text(text):
+    if not isinstance(text, str):
+        return ""
+
+    text = html.unescape(text)
+    text = re.sub(r"<[^>]+>", " ", text)
+    text = re.sub(r"https?://\S+", " ", text)
+    text = re.sub(r"www\.\S+", " ", text)
+
+    text = text.lower()
+    text = text.replace("\u2019", "'").replace("\u2018", "'")
+    for short, long in SPECIAL_CONTRACTIONS.items():
+        text = text.replace(short, long)
+    for ending, replacement in CONTRACTION_ENDINGS:
+        text = text.replace(ending, replacement)
+    text = re.sub(r"[^a-z ]", " ", text)
+    return " ".join(w for w in text.split() if w not in STOP_WORDS)
+
 
 ROOT = Path(__file__).resolve().parent.parent
 RAW_PATH = ROOT / "data" / "raw" / "Reviews.csv"
@@ -17,10 +82,9 @@ def main():
     print("\nMissing data (%):")
     print((df.isna().mean() * 100).round(2))
 
+    print()
+    df = remove_duplicates(df)
     df = df.drop(columns=["Id", "ProfileName"])
-    before = len(df)
-    df = df.drop_duplicates(subset=["UserId", "Time", "Text"])
-    print(f"\nDuplicates removed: {before - len(df)}")
 
     before = len(df)
     df = df[df["HelpfulnessNumerator"] <= df["HelpfulnessDenominator"]]

@@ -1,0 +1,3 @@
+model,true_neg,false_pos,false_neg,true_pos
+logreg,9863,1638,7873,59732
+naive_bayes,9252,2249,8340,59265

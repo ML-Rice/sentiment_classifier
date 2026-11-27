@@ -26,7 +26,7 @@ def check_missingness(df):
     })
     print(report)
     flagged = report[report["missing_pct"] > 30]
-    print("\nColumns over 30% missing (lead's rule):",
+    print("\nColumns over 30% missing:",
           list(flagged.index) if len(flagged) else "none")
 
     print("\nBlank (empty or whitespace-only) text:")
